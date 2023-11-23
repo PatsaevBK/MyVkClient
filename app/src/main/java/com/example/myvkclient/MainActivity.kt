@@ -4,9 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import com.example.myvkclient.ui.theme.HomeScreen
+import com.example.myvkclient.ui.theme.MainScreen
 import com.example.myvkclient.ui.theme.MyVkClientTheme
-import com.example.myvkclient.ui.theme.PostCard
 
 class MainActivity : ComponentActivity() {
 
@@ -18,6 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyVkClientTheme {
                 // A surface container using the 'background' color from the theme
+                MainScreen(viewModel = viewModel)
             }
         }
     }
