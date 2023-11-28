@@ -1,10 +1,9 @@
-package com.example.myvkclient
+package com.example.myvkclient.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import com.example.myvkclient.ui.theme.MainScreen
 import com.example.myvkclient.ui.theme.MyVkClientTheme
 
 class MainActivity : ComponentActivity() {

@@ -1,10 +1,9 @@
-package com.example.myvkclient.ui.theme
+package com.example.myvkclient.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,19 +16,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.myvkclient.ViewModel
 import com.example.myvkclient.domain.FeedPost
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 fun HomeScreen(
-    viewModel: ViewModel
+    viewModel: ViewModel,
+    paddingValues: PaddingValues,
+//    navigationState: NavigationState
 ) {
-    val listFeedPostState = viewModel.listFeedPostStateFlow.collectAsState()
+    val homeScreenState = viewModel.screenState.collectAsState()
+    when (val currentState = homeScreenState.value) {
+        is HomeScreenState.Posts -> FeedPosts(
+            paddingValues,
+            currentState,
+            viewModel,
+//            navigationState
+        )
+
+        is HomeScreenState.Comments -> {
+            CommentsScreen(
+                post = currentState.feedPost,
+                comments = currentState.comments,
+                onBackPressed = { viewModel.closeComments() }
+            )
+            BackHandler {
+                viewModel.closeComments()
+            }
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@Composable
+private fun FeedPosts(
+    paddingValues: PaddingValues,
+    feedPostState: HomeScreenState.Posts,
+    viewModel: ViewModel,
+//    navigationState: NavigationState
+) {
     LazyColumn(
+        modifier = Modifier.padding(paddingValues),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(listFeedPostState.value, key = { it.id }) { feedPost: FeedPost ->
+        items(feedPostState.posts, key = { it.id }) { feedPost: FeedPost ->
             val dismissState = rememberDismissState()
             if (dismissState.isDismissed(DismissDirection.EndToStart)) {
                 viewModel.remove(feedPost)
@@ -48,7 +78,7 @@ fun HomeScreen(
                     { statisticItem -> viewModel.updateCount(feedPost, statisticItem) },
                     { statisticItem -> viewModel.updateCount(feedPost, statisticItem) },
                     { statisticItem -> viewModel.updateCount(feedPost, statisticItem) },
-                    { statisticItem -> viewModel.updateCount(feedPost, statisticItem) }
+                    { viewModel.showComments(feedPost) }
                 )
             }
         }

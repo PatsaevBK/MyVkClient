@@ -1,4 +1,4 @@
-package com.example.myvkclient
+package com.example.myvkclient.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -6,33 +6,30 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.PostComment
 import com.example.myvkclient.domain.StatisticItem
-import com.example.myvkclient.ui.theme.NavigationItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class ViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
     private val listFeedPost = List(100) { FeedPost(it) }
+    private val comments = List(15) { PostComment(id = it, "Name $it") }
 
-    private val _bottomStateFlow = MutableStateFlow(NavigationItem.HOME)
-    val bottomStateFlow = _bottomStateFlow.asStateFlow()
+    private val initialState = HomeScreenState.Posts(listFeedPost)
 
+    private val _screenState =
+        MutableStateFlow<HomeScreenState>(initialState)
+    val screenState = _screenState.asStateFlow()
 
-    private val _listFeedPostStateFlow = MutableStateFlow(listFeedPost)
-    val listFeedPostStateFlow = _listFeedPostStateFlow.asStateFlow()
+    private var previousState: HomeScreenState = initialState
 
-    fun changeBottomState(navigationItem: NavigationItem) {
-        _bottomStateFlow.apply {
-            value = when (navigationItem) {
-                NavigationItem.HOME -> NavigationItem.HOME
-                NavigationItem.FAVORITE -> NavigationItem.FAVORITE
-                NavigationItem.PROFILE -> NavigationItem.PROFILE
-            }
-        }
-    }
 
     fun updateCount(feedPost: FeedPost, statisticItem: StatisticItem) {
+        val currentState = _screenState.value
+        if (currentState !is HomeScreenState.Posts) return
+
+        val oldPosts = currentState.posts.toMutableList()
         val oldStatistics = feedPost.statistics
         val newStatistics = oldStatistics.toMutableList().apply {
             replaceAll { oldItem: StatisticItem ->
@@ -44,22 +41,34 @@ class ViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
             }
         }.toList()
         val newFeedPost = feedPost.copy(statistics = newStatistics)
-        val newList = _listFeedPostStateFlow.value.toMutableList().apply {
-            replaceAll {
-                if (it == feedPost) {
+        val newPosts = oldPosts.apply {
+            replaceAll { oldFeedPost: FeedPost ->
+                if (oldFeedPost.id == newFeedPost.id) {
                     newFeedPost
-                } else it
+                } else oldFeedPost
             }
         }.toList()
-        _listFeedPostStateFlow.value = newList
+        val newHomeScreenState = HomeScreenState.Posts(newPosts)
+        _screenState.value = newHomeScreenState
     }
 
     fun remove(feedPost: FeedPost) {
-        val currentList = _listFeedPostStateFlow.value.toMutableList()
+        val currentState = _screenState.value
+        if (currentState !is HomeScreenState.Posts) return
+
+        val currentList = currentState.posts.toMutableList()
         currentList.remove(feedPost)
-        _listFeedPostStateFlow.value = currentList.toList()
+        _screenState.value = HomeScreenState.Posts(currentList)
     }
 
+    fun showComments(feedPost: FeedPost) {
+        previousState = _screenState.value
+        _screenState.value = HomeScreenState.Comments(feedPost, comments)
+    }
+
+    fun closeComments() {
+        _screenState.value = previousState
+    }
 
     companion object {
         val Factory = object : ViewModelProvider.Factory {

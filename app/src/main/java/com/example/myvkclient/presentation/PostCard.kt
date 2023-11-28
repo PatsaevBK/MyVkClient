@@ -1,4 +1,4 @@
-package com.example.myvkclient.ui.theme
+package com.example.myvkclient.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -30,6 +30,7 @@ import com.example.myvkclient.R
 import com.example.myvkclient.domain.FeedPost
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
+import com.example.myvkclient.ui.theme.MyVkClientTheme
 
 @Composable
 fun PostCard(
