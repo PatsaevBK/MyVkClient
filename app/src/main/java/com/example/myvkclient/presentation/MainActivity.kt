@@ -8,7 +8,6 @@ import com.example.myvkclient.ui.theme.MyVkClientTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by viewModels<ViewModel> { ViewModel.Factory }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,7 +15,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyVkClientTheme {
                 // A surface container using the 'background' color from the theme
-                MainScreen(viewModel = viewModel)
+                VkNewsMainScreen()
             }
         }
     }

@@ -13,7 +13,7 @@ enum class NavigationItem(
     val tittleId: Int,
     val icon: ImageVector
 ) {
-    HOME(Screen.NewsFeed, R.string.navigation_item_main, Icons.Filled.Home),
+    HOME(Screen.Home, R.string.navigation_item_main, Icons.Filled.Home),
     FAVORITE(Screen.Favourite, R.string.navigation_item_favorite, Icons.Filled.Favorite),
     PROFILE(Screen.Profile, R.string.navigation_item_profile, Icons.Filled.AccountBox)
 }
