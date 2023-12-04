@@ -26,9 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @Composable
 fun VkNewsMainScreen() {
     val navigationState = rememberNavigationState()
-    val commentsToPost: MutableState<FeedPost?> = remember {
-        mutableStateOf(null)
-    }
+
     Scaffold(
         bottomBar = {
             BottomBar(navigationState)
@@ -38,12 +36,11 @@ fun VkNewsMainScreen() {
             navHostController = navigationState.navHostController,
             newsFeedScreenContent = {
                 HomeScreen(paddingValues) {
-                    commentsToPost.value = it
-                    navigationState.navigateToComments()
+                    navigationState.navigateToComments(it)
                 }
             },
-            commentsScreenContent = {
-                CommentsScreen(commentsToPost.value!!) {
+            commentsScreenContent = {feedPost ->
+                CommentsScreen(feedPost) {
                     navigationState.navHostController.popBackStack()
                 }
             },

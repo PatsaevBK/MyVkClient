@@ -12,14 +12,13 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class NewsFeedViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    private val listFeedPost = List(100) { FeedPost(it) }
+    private val listFeedPost = List(100) { FeedPost(id = it, contentText = "Content /$it") }
 
     private val initialState = NewsFeedScreenState.Posts(listFeedPost)
 
     private val _screenState =
         MutableStateFlow<NewsFeedScreenState>(initialState)
     val screenState = _screenState.asStateFlow()
-
 
 
     fun updateCount(feedPost: FeedPost, statisticItem: StatisticItem) {
