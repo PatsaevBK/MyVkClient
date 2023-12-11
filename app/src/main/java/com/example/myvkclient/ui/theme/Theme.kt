@@ -15,25 +15,23 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.example.myvkclient.presentation.Black500
-import com.example.myvkclient.presentation.Black900
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Black900,
+    /*primary = Black900,
     secondary = Black900,
     onTertiary = Black900,
     onPrimary = Color.White,
     onSecondary = Black500,
-    onSurfaceVariant = Black500
+    onSurfaceVariant = Black500*/
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color.White,
+    /*primary = Color.White,
     secondary = Color.White,
     onTertiary = Color.White,
     onPrimary = Black900,
     onSecondary = Black500,
-    onSurfaceVariant = Black500
+    onSurfaceVariant = Black500*/
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -50,7 +48,7 @@ private val LightColorScheme = lightColorScheme(
 fun MyVkClientTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

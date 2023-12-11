@@ -1,4 +1,4 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.news
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -136,7 +135,7 @@ private fun IconWithText(idResource: Int, text: String, onItemClickListener: () 
         Icon(
             painter = painterResource(id = idResource),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondary
+            /*tint = MaterialTheme.colorScheme.onSecondary*/
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = text)
@@ -159,9 +158,9 @@ private fun PostHeader(feedPost: FeedPost) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = feedPost.communityName, color = MaterialTheme.colorScheme.onPrimary)
+            Text(text = feedPost.communityName,/* color = MaterialTheme.colorScheme.onPrimary*/)
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = feedPost.publicationData, color = MaterialTheme.colorScheme.onSecondary)
+            Text(text = feedPost.publicationData, /*color = MaterialTheme.colorScheme.onSecondary*/)
         }
         Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = null)
     }

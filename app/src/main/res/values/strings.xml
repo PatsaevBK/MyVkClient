@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">My Vk Client</string>
     <string name="text_template">Lorem ipsum dolor sit amet, consectetur adipiscing elit. </string>
-
+    <integer name="com_vk_sdk_AppId">51808970</integer>
     <string name="navigation_item_main">Главная</string>
     <string name="navigation_item_favorite">Избранное</string>
     <string name="navigation_item_profile">Профиль</string>
+    <string name="registration">Войти</string>
 </resources>

@@ -1,6 +1,5 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.news
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,7 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myvkclient.domain.FeedPost
 
 @Composable
-fun HomeScreen(
+fun NewsFeedScreen(
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit
 ) {

@@ -1,6 +1,5 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.comments
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.myvkclient.domain.FeedPost

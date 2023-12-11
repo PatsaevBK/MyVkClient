@@ -1,4 +1,4 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.comments
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding

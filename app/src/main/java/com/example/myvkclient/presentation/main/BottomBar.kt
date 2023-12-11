@@ -1,4 +1,4 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.main
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar

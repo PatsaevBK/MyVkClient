@@ -1,4 +1,4 @@
-package com.example.myvkclient.presentation
+package com.example.myvkclient.presentation.comments
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -10,17 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,19 +49,19 @@ fun CommentCard(postComment: PostComment) {
         ) {
             Text(
                 text = "${postComment.authorName} CommentId: ${postComment.id}",
-                color = MaterialTheme.colorScheme.onPrimary,
+                /*color = MaterialTheme.colorScheme.onPrimary,*/
                 fontSize = 12.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = postComment.commentText,
-                color = MaterialTheme.colorScheme.onPrimary,
+                /*color = MaterialTheme.colorScheme.onPrimary,*/
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = postComment.publicationTime,
-                color = MaterialTheme.colorScheme.onSecondary,
+                /*color = MaterialTheme.colorScheme.onSecondary,*/
                 fontSize = 12.sp
             )
         }
