@@ -1,6 +1,5 @@
 package com.example.myvkclient.presentation.news
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,20 +15,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.myvkclient.R
 import com.example.myvkclient.domain.FeedPost
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
-import com.example.myvkclient.ui.theme.MyVkClientTheme
+import com.example.myvkclient.ui.theme.DarkRed
 
 @Composable
 fun PostCard(
@@ -47,8 +48,8 @@ fun PostCard(
                 text = feedPost.contentText,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Image(
-                painter = painterResource(id = feedPost.contentImageResId),
+            AsyncImage(
+                model = feedPost.contentImageUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -75,6 +76,7 @@ private fun Statistics(
     onCommentClickListener: (StatisticItem) -> Unit,
 ) {
     val statistics = feedPost.statistics
+    val isFavorite = feedPost.isFavorite
     Row(
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp, bottom = 4.dp)
@@ -86,7 +88,7 @@ private fun Statistics(
             val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
             IconWithText(
                 R.drawable.ic_views_count,
-                viewsItem.count.toString(),
+                convertStatisticsToString(viewsItem.count),
                 onItemClickListener = {
                     onViewsClickListener(viewsItem)
                 }
@@ -96,7 +98,7 @@ private fun Statistics(
             val shareItem = statistics.getItemByType(StatisticType.SHARES)
             IconWithText(
                 R.drawable.ic_share,
-                shareItem.count.toString(),
+                convertStatisticsToString(shareItem.count),
                 onItemClickListener = {
                     onShareClickListener(shareItem)
                 }
@@ -104,20 +106,30 @@ private fun Statistics(
             val commentItem = statistics.getItemByType(StatisticType.COMMENTS)
             IconWithText(
                 R.drawable.ic_comment,
-                commentItem.count.toString(),
+                convertStatisticsToString(commentItem.count),
                 onItemClickListener = {
                     onCommentClickListener(commentItem)
                 }
             )
             val likeItem = statistics.getItemByType(StatisticType.LIKES)
+            val favoriteIconId = if (isFavorite) R.drawable.ic_like else R.drawable.ic_unlike
             IconWithText(
-                R.drawable.ic_like,
-                likeItem.count.toString(),
+                favoriteIconId,
+                convertStatisticsToString(likeItem.count),
+                if (isFavorite) DarkRed else Color.Unspecified,
                 onItemClickListener = {
                     onLikeClickListener(likeItem)
                 }
             )
         }
+    }
+}
+
+private fun convertStatisticsToString(count: Int): String {
+    return when {
+        count > 100_000 -> "${count / 1000}К"
+        count in 1000..100_000 -> String.format("%.1fК", count / 1000f)
+        else -> "$count"
     }
 }
 
@@ -127,7 +139,12 @@ private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticIte
 }
 
 @Composable
-private fun IconWithText(idResource: Int, text: String, onItemClickListener: () -> Unit) {
+private fun IconWithText(
+    idResource: Int,
+    text: String,
+    tint: Color = Color.Unspecified,
+    onItemClickListener: () -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.clickable(onClick = onItemClickListener)
@@ -135,7 +152,8 @@ private fun IconWithText(idResource: Int, text: String, onItemClickListener: () 
         Icon(
             painter = painterResource(id = idResource),
             contentDescription = null,
-            /*tint = MaterialTheme.colorScheme.onSecondary*/
+            tint = tint,
+            modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = text)
@@ -147,8 +165,8 @@ private fun PostHeader(feedPost: FeedPost) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
-            painter = painterResource(id = feedPost.avatarRestId),
+        AsyncImage(
+            model = feedPost.communityImageUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(50.dp)
@@ -158,14 +176,15 @@ private fun PostHeader(feedPost: FeedPost) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = feedPost.communityName,/* color = MaterialTheme.colorScheme.onPrimary*/)
+            Text(text = feedPost.communityName/* color = MaterialTheme.colorScheme.onPrimary*/)
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = feedPost.publicationData, /*color = MaterialTheme.colorScheme.onSecondary*/)
+            Text(text = feedPost.publicationData /*color = MaterialTheme.colorScheme.onSecondary*/)
         }
         Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = null)
     }
 }
 
+/*
 @Composable
 @Preview
 private fun DarkThem() {
@@ -182,4 +201,4 @@ private fun LightThem() {
     MyVkClientTheme(false) {
         PostCard(feedPost, { }, { }, { }, { })
     }
-}
+}*/

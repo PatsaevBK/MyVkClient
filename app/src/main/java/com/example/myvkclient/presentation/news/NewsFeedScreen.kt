@@ -23,7 +23,7 @@ fun NewsFeedScreen(
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit
 ) {
-    val newsFeedViewModel: NewsFeedViewModel = viewModel()
+    val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = NewsFeedViewModel.Factory)
     val homeScreenState = newsFeedViewModel.screenState.collectAsState()
     when (val currentState = homeScreenState.value) {
         is NewsFeedScreenState.Posts -> FeedPosts(
@@ -32,7 +32,7 @@ fun NewsFeedScreen(
             newsFeedViewModel,
             onCommentClickListener
         )
-        NewsFeedScreenState.Initial -> {
+        is NewsFeedScreenState.Initial -> {
 
         }
     }

@@ -1,25 +1,53 @@
 package com.example.myvkclient.presentation.news
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.myvkclient.data.mapper.NewsFeedMapper
+import com.example.myvkclient.data.network.ApiFactory
 import com.example.myvkclient.domain.FeedPost
 import com.example.myvkclient.domain.StatisticItem
+import com.vk.api.sdk.VKPreferencesKeyValueStorage
+import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class NewsFeedViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class NewsFeedViewModel(
+    private val savedStateHandle: SavedStateHandle,
+    private val application: Application
+) : AndroidViewModel(application) {
 
-    private val listFeedPost = List(100) { FeedPost(id = it, contentText = "Content /$it") }
 
-    private val initialState = NewsFeedScreenState.Posts(listFeedPost)
+    private val initialState = NewsFeedScreenState.Initial
 
     private val _screenState =
         MutableStateFlow<NewsFeedScreenState>(initialState)
     val screenState = _screenState.asStateFlow()
 
+    private val mapper = NewsFeedMapper()
+
+    init {
+        getFeedPosts()
+    }
+
+    private fun getFeedPosts() {
+        viewModelScope.launch {
+            val storage = VKPreferencesKeyValueStorage(application)
+            val token = VKAccessToken.restore(storage) ?: return@launch
+            val newsFeedResponseDto = ApiFactory.apiService.loadFeedPosts(token.accessToken)
+            val feedPosts = mapper.mapResponseToPosts(newsFeedResponseDto)
+//            Log.d("NewsFeedViewModel", token.accessToken)
+            Log.d("NewsFeedViewModel", "${feedPosts.map { it.isFavorite }}")
+            _screenState.value = NewsFeedScreenState.Posts(feedPosts)
+        }
+    }
 
     fun updateCount(feedPost: FeedPost, statisticItem: StatisticItem) {
         val currentState = _screenState.value
@@ -65,7 +93,7 @@ class NewsFeedViewModel(private val savedStateHandle: SavedStateHandle) : ViewMo
                 val application =
                     checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
                 val savedStateHandle = extras.createSavedStateHandle()
-                return NewsFeedViewModel(savedStateHandle) as T
+                return NewsFeedViewModel(savedStateHandle, application) as T
             }
         }
     }
