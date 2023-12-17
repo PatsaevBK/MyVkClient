@@ -1,9 +1,9 @@
-package com.example.myvkclient.data.network.models
+package com.example.myvkclient.data.network.models.newsFeed
 
 import com.google.gson.annotations.SerializedName
 
 data class PostDto(
-    @SerializedName("id") val id: String,
+    @SerializedName("id") val id: Long,
     @SerializedName("type") val type: String,
     @SerializedName("source_id") val communityId: Long,
     @SerializedName("text") val text: String,

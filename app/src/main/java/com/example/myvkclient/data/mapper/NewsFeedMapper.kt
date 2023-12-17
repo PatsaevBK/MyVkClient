@@ -1,6 +1,7 @@
 package com.example.myvkclient.data.mapper
 
-import com.example.myvkclient.data.network.models.NewsFeedResponseDto
+import com.example.myvkclient.data.network.models.newsFeed.NewsFeedResponseDto
+import com.example.myvkclient.data.network.models.newsFeed.LikesCountResponseDto
 import com.example.myvkclient.domain.FeedPost
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
@@ -29,6 +30,7 @@ class NewsFeedMapper {
             val attachmentsDto = postDto.attachments
             val feedPost = FeedPost(
                 id = postDto.id,
+                communityId = postDto.communityId,
                 communityName = group.name,
                 publicationData = convertTimestampToTime(postDto.data),
                 communityImageUrl = group.imageUrl,

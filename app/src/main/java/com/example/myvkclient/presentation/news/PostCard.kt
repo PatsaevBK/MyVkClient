@@ -36,8 +36,6 @@ import com.example.myvkclient.ui.theme.DarkRed
 fun PostCard(
     feedPost: FeedPost,
     onFeedPostLikeClickListener: (StatisticItem) -> Unit,
-    onFeedPostShareClickListener: (StatisticItem) -> Unit,
-    onFeedPostViewsClickListener: (StatisticItem) -> Unit,
     onFeedPostCommentClickListener: (StatisticItem) -> Unit
 ) {
     Card {
@@ -59,8 +57,6 @@ fun PostCard(
             Statistics(
                 feedPost,
                 onLikeClickListener = onFeedPostLikeClickListener,
-                onShareClickListener = onFeedPostShareClickListener,
-                onViewsClickListener = onFeedPostViewsClickListener,
                 onCommentClickListener = onFeedPostCommentClickListener
             )
         }
@@ -71,8 +67,6 @@ fun PostCard(
 private fun Statistics(
     feedPost: FeedPost,
     onLikeClickListener: (StatisticItem) -> Unit,
-    onShareClickListener: (StatisticItem) -> Unit,
-    onViewsClickListener: (StatisticItem) -> Unit,
     onCommentClickListener: (StatisticItem) -> Unit,
 ) {
     val statistics = feedPost.statistics
@@ -88,20 +82,14 @@ private fun Statistics(
             val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
             IconWithText(
                 R.drawable.ic_views_count,
-                convertStatisticsToString(viewsItem.count),
-                onItemClickListener = {
-                    onViewsClickListener(viewsItem)
-                }
+                convertStatisticsToString(viewsItem.count)
             )
         }
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
             val shareItem = statistics.getItemByType(StatisticType.SHARES)
             IconWithText(
                 R.drawable.ic_share,
-                convertStatisticsToString(shareItem.count),
-                onItemClickListener = {
-                    onShareClickListener(shareItem)
-                }
+                convertStatisticsToString(shareItem.count)
             )
             val commentItem = statistics.getItemByType(StatisticType.COMMENTS)
             IconWithText(
@@ -143,11 +131,17 @@ private fun IconWithText(
     idResource: Int,
     text: String,
     tint: Color = Color.Unspecified,
-    onItemClickListener: () -> Unit
+    onItemClickListener: (() -> Unit)? = null
 ) {
+    val modifier = if (onItemClickListener == null) {
+        Modifier
+    } else {
+        Modifier.clickable(onClick = onItemClickListener)
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable(onClick = onItemClickListener)
+        modifier = modifier
     ) {
         Icon(
             painter = painterResource(id = idResource),

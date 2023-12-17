@@ -18,6 +18,7 @@ object ApiFactory {
     private val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(BASE_URL)
+        .client(okHttpClient)
         .build()
 
     val apiService = retrofit.create(ApiService::class.java)
