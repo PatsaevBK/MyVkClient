@@ -7,4 +7,5 @@
     <string name="navigation_item_profile">Профиль</string>
     <string name="registration">Войти</string>
     <string name="ignore_post_toast">Пост скрыт</string>
+    <string name="Comments">Комментарии</string>
 </resources>

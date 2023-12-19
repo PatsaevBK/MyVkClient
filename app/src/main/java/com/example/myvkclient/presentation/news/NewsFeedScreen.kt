@@ -17,7 +17,6 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -75,6 +74,7 @@ private fun FeedPosts(
 ) {
     LazyColumn(
         modifier = Modifier.padding(paddingValues),
+        contentPadding = PaddingValues(8.dp, 16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(feedPostState.posts, key = { it.id }) { feedPost: FeedPost ->

@@ -7,4 +7,6 @@ interface Repository {
     suspend fun changeLikeStatus(feedPost: FeedPost)
 
     suspend fun ignoreItem(feedPost: FeedPost)
+
+    suspend fun loadCommentsToPost(feedPost: FeedPost): List<PostComment>
 }

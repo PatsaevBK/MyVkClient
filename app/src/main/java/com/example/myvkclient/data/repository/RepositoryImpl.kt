@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.myvkclient.data.mapper.NewsFeedMapper
 import com.example.myvkclient.data.network.ApiFactory
 import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.PostComment
 import com.example.myvkclient.domain.Repository
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
@@ -28,6 +29,10 @@ class RepositoryImpl(
 
     private var nextFrom: String? = null
 
+    private val _commentsToFeedPost = mutableListOf<PostComment>()
+    val commentsToFeedPost: List<PostComment>
+        get() = _commentsToFeedPost.toList()
+
     override suspend fun loadNewsFeed(): List<FeedPost> {
         Log.d("RepositoryImpl", "${token?.accessToken}")
         val startFrom = nextFrom
@@ -45,6 +50,7 @@ class RepositoryImpl(
         nextFrom = response.newsFeedContentDto.nextFrom
         val listFeedPost = mapper.mapResponseToPosts(response)
         _feedPosts.addAll(listFeedPost)
+        Log.d("RepositoryImpl", "$listFeedPost")
         return feedPosts
     }
 
@@ -54,8 +60,8 @@ class RepositoryImpl(
             feedPost.communityId,
             feedPost.id
         )
-        Log.d("RepositoryImpl", ignoreStatus.ignoreStatus.status.toString())
-        if (ignoreStatus.ignoreStatus.status) {
+        Log.d("RepositoryImpl", ignoreStatus.ignoreStatusDto.status.toString())
+        if (ignoreStatus.ignoreStatusDto.status) {
             _feedPosts.remove(feedPost)
         }
     }
@@ -86,5 +92,17 @@ class RepositoryImpl(
         val newPost = feedPost.copy(statistics = newStatistics, isFavorite = !feedPost.isFavorite)
         val postIndex = _feedPosts.indexOf(feedPost)
         _feedPosts[postIndex] = newPost
+    }
+
+    override suspend fun loadCommentsToPost(feedPost: FeedPost): List<PostComment> {
+        _commentsToFeedPost.clear()
+        val response = apiService.getCommentsToPost(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            id = feedPost.id
+        )
+        val listOfComments = mapper.mapCommentsResponseDtoToPostComment(response)
+        _commentsToFeedPost.addAll(listOfComments)
+        return commentsToFeedPost
     }
 }

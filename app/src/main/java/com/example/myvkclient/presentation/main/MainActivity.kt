@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
 
                 when (authState.value) {
                     AuthState.Authorized -> {
-                        Log.d("MainActivity", "Success auth")
                         VkNewsMainScreen()
                     }
                     AuthState.NotAuthorized -> {

@@ -1,8 +1,13 @@
 package com.example.myvkclient.data.mapper
 
+import com.example.myvkclient.data.network.models.comments.CommentItemDto
+import com.example.myvkclient.data.network.models.comments.CommentLikeDto
+import com.example.myvkclient.data.network.models.comments.CommentProfileDto
+import com.example.myvkclient.data.network.models.comments.CommentsResponseDto
 import com.example.myvkclient.data.network.models.newsFeed.NewsFeedResponseDto
-import com.example.myvkclient.data.network.models.newsFeed.LikesCountResponseDto
 import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.PostComment
+import com.example.myvkclient.domain.PostCommentLikes
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
 import java.sql.Timestamp
@@ -49,8 +54,37 @@ class NewsFeedMapper {
         return result
     }
 
+    fun mapCommentsResponseDtoToPostComment(
+        commentsResponseDto: CommentsResponseDto
+    ): List<PostComment> {
+        val result = mutableListOf<PostComment>()
+        val listOfProfiles = commentsResponseDto.content.profiles
+        commentsResponseDto.content.items.forEach { commentItemDto: CommentItemDto ->
+            val author = listOfProfiles.firstOrNull { it.id == commentItemDto.fromId }
+                ?: throw IllegalStateException("there's no such profile for this comment: $commentItemDto")
+            result.add(
+                PostComment(
+                    id = commentItemDto.id,
+                    authorName = author.firstName,
+                    authorLastName = author.lastName,
+                    authorAvatarUrl = author.photoUri,
+                    commentText = commentItemDto.text,
+                    publicationTime = convertTimestampToTime(commentItemDto.date),
+                    postCommentLikes = with(commentItemDto.commentLike) {
+                        PostCommentLikes(
+                            count = count,
+                            canLike = canLike == 1,
+                            userLiked = userLikes == 1
+                        )
+                    }
+                )
+            )
+        }
+        return result.toList()
+    }
+
     private fun convertTimestampToTime(timestamp: Long): String {
-        // Cоздаем объект Timestamp он в конструктор принимает миллисекунды! (умн. на 1000)
+        // Создание объекта Timestamp он в конструктор принимает миллисекунды! (умн. на 1000)
         val stamp = Timestamp(timestamp * 1000)
         val date = Date(stamp.time)
         val pattern = choosePattern(timestamp)
