@@ -48,11 +48,20 @@ interface ApiService {
         @Query(QUERY_PARAM_COMMENT_POST_ID) id: Long
     ): CommentsResponseDto
 
+    @GET("wall.getComments?need_likes=1&extended=1&fields=photo_100&offset=1&v=5.199")
+    suspend fun getCommentsToPost(
+        @Query(QUERY_PARAM_ACCESS_TOKEN) token: String,
+        @Query(QUERY_PARAM_OWNER_ID) ownerId: Long,
+        @Query(QUERY_PARAM_COMMENT_POST_ID) id: Long,
+        @Query(QUERY_PARAM_START_COMMENT_ID) startCommentId: Long
+    ): CommentsResponseDto
+
     companion object {
         private const val QUERY_PARAM_ACCESS_TOKEN = "access_token"
         private const val QUERY_PARAM_FEED_POST_ID = "item_id"
         private const val QUERY_PARAM_COMMENT_POST_ID = "post_id"
         private const val QUERY_PARAM_OWNER_ID = "owner_id"
         private const val QUERY_PARAM_START_FROM = "start_from"
+        private const val QUERY_PARAM_START_COMMENT_ID = "start_comment_id"
     }
 }

@@ -9,4 +9,6 @@ interface Repository {
     suspend fun ignoreItem(feedPost: FeedPost)
 
     suspend fun loadCommentsToPost(feedPost: FeedPost): List<PostComment>
+
+    suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost): List<PostComment>
 }

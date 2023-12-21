@@ -102,7 +102,23 @@ class RepositoryImpl(
             id = feedPost.id
         )
         val listOfComments = mapper.mapCommentsResponseDtoToPostComment(response)
-        _commentsToFeedPost.addAll(listOfComments)
+        if (listOfComments.isNotEmpty()) {
+            _commentsToFeedPost.addAll(listOfComments)
+        }
+        return commentsToFeedPost
+    }
+
+    override suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost): List<PostComment> {
+        val response = apiService.getCommentsToPost(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            id = feedPost.id,
+            startCommentId = _commentsToFeedPost.last().id
+        )
+        val nextListOfComments = mapper.mapCommentsResponseDtoToPostComment(response)
+        if (nextListOfComments.isNotEmpty()) {
+            _commentsToFeedPost.addAll(nextListOfComments)
+        }
         return commentsToFeedPost
     }
 }

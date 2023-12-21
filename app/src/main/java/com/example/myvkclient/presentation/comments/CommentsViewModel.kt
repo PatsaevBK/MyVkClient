@@ -24,13 +24,36 @@ class CommentsViewModel(
     private val repositoryImpl = RepositoryImpl(application)
 
     init {
+        _screenState.value = CommentsScreenState.Loading
         loadComments(post)
     }
 
     private fun loadComments(post: FeedPost) {
         viewModelScope.launch {
             val comments = repositoryImpl.loadCommentsToPost(post)
-            _screenState.value = CommentsScreenState.Comments(post, comments)
+            _screenState.value = CommentsScreenState.Comments(post, comments, false)
+        }
+    }
+
+    fun loadNextComments(post: FeedPost) {
+        _screenState.value = CommentsScreenState.Comments(
+            feedPost = post,
+            comments = repositoryImpl.commentsToFeedPost,
+            nextCommentIsLoading = true
+        )
+        viewModelScope.launch {
+            val before = repositoryImpl.commentsToFeedPost
+            val comments = repositoryImpl.loadCommentsToPostFromLastComment(post)
+            if (comments == before) {
+                _screenState.value = CommentsScreenState.Comments(
+                    feedPost = post,
+                    comments = comments,
+                    nextCommentIsLoading = false,
+                    thatIsAll = true
+                )
+            } else {
+                _screenState.value = CommentsScreenState.Comments(post, comments, false)
+            }
         }
     }
 
