@@ -2,13 +2,13 @@ package com.example.myvkclient.domain
 
 interface Repository {
 
-    suspend fun loadNewsFeed(): List<FeedPost>
+    suspend fun loadNextNewsFeed()
 
     suspend fun changeLikeStatus(feedPost: FeedPost)
 
     suspend fun ignoreItem(feedPost: FeedPost)
 
-    suspend fun loadCommentsToPost(feedPost: FeedPost): List<PostComment>
+    suspend fun loadCommentsToPost(feedPost: FeedPost)
 
-    suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost): List<PostComment>
+    suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost)
 }

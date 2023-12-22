@@ -37,7 +37,7 @@ fun CommentsScreen(
 ) {
     val commentsViewModel: CommentsViewModel =
         viewModel(factory = CommentsViewModel.CommentsViewModelFactory(feedPost))
-    val screenState = commentsViewModel.screenState.collectAsState()
+    val screenState = commentsViewModel.screenState.collectAsState(CommentsScreenState.Initial)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,8 +62,7 @@ fun CommentsScreen(
                     paddingValues,
                     commentsViewModel,
                     currentState.comments,
-                    currentState.nextCommentIsLoading,
-                    currentState.thatIsAll
+                    currentState.nextCommentIsLoading
                 )
             }
 
@@ -92,7 +91,6 @@ private fun Comments(
     commentsViewModel: CommentsViewModel,
     listOfItems: List<PostComment>,
     nextCommentIsLoading: Boolean,
-    thatIsAll: Boolean
 ) {
     LazyColumn(
         modifier = Modifier.padding(paddingValues),
@@ -110,19 +108,17 @@ private fun Comments(
                 onLikeCommentClickListener = { }
             )
         }
-        if (!thatIsAll) {
-            item {
-                if (nextCommentIsLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = DarkBlue)
-                    }
-                } else {
-                    SideEffect {
-                        commentsViewModel.loadNextComments(feedPost)
-                    }
+        item {
+            if (nextCommentIsLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = DarkBlue)
+                }
+            } else {
+                SideEffect {
+                    commentsViewModel.loadNextComments(feedPost)
                 }
             }
         }

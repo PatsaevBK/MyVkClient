@@ -10,58 +10,64 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myvkclient.data.repository.RepositoryImpl
 import com.example.myvkclient.domain.FeedPost
-import com.example.myvkclient.domain.StatisticItem
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.myvkclient.extensions.mergeWith
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class NewsFeedViewModel(
     private val savedStateHandle: SavedStateHandle,
-    private val application: Application
+    application: Application
 ) : AndroidViewModel(application) {
 
 
-    private val initialState = NewsFeedScreenState.Initial
-
-    private val _screenState =
-        MutableStateFlow<NewsFeedScreenState>(initialState)
-    val screenState = _screenState.asStateFlow()
-
     private val repository = RepositoryImpl(application)
 
-    init {
-        _screenState.value = NewsFeedScreenState.Loading
-        loadFeedPosts()
+    private val newsFeedFlow = repository.newsFeed
+
+    private val loadNextDataEvents = MutableSharedFlow<Unit>()
+    private val loadNextDataFlow = flow<NewsFeedScreenState> {
+        loadNextDataEvents.collect {
+            emit(
+                NewsFeedScreenState.Posts(
+                    newsFeedFlow.value,
+                    true
+                )
+            )
+        }
     }
+
+    val screenState = newsFeedFlow
+        .filter { it.isNotEmpty() }
+        .map { NewsFeedScreenState.Posts(it) as NewsFeedScreenState }
+        .onStart { emit(NewsFeedScreenState.Loading) }
+        .mergeWith(loadNextDataFlow)
+
 
     fun changeLikeStatus(feedPost: FeedPost) {
         viewModelScope.launch {
             repository.changeLikeStatus(feedPost)
-            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
         }
     }
 
-    private fun loadFeedPosts() {
-        viewModelScope.launch {
-            _screenState.value = NewsFeedScreenState.Posts(repository.loadNewsFeed())
-        }
-    }
 
     fun loadNextFeedPosts() {
-        _screenState.value = NewsFeedScreenState.Posts(
-            posts = repository.feedPosts,
-            nextDataIsLoading = true
-        )
-        loadFeedPosts()
+        viewModelScope.launch {
+            loadNextDataEvents.emit(Unit)
+            repository.loadNextNewsFeed()
+        }
     }
 
     fun ignoreItem(feedPost: FeedPost) {
         viewModelScope.launch {
             repository.ignoreItem(feedPost)
-            _screenState.value = NewsFeedScreenState.Posts(repository.feedPosts)
         }
 
     }
+
 
 
     companion object {

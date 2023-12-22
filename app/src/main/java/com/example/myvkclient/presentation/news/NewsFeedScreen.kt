@@ -35,7 +35,7 @@ fun NewsFeedScreen(
     onCommentClickListener: (FeedPost) -> Unit
 ) {
     val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = NewsFeedViewModel.Factory)
-    val homeScreenState = newsFeedViewModel.screenState.collectAsState()
+    val homeScreenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
     when (val currentState = homeScreenState.value) {
         is NewsFeedScreenState.Posts -> FeedPosts(
             paddingValues,

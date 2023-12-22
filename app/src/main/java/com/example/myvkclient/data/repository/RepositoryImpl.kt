@@ -9,8 +9,16 @@ import com.example.myvkclient.domain.PostComment
 import com.example.myvkclient.domain.Repository
 import com.example.myvkclient.domain.StatisticItem
 import com.example.myvkclient.domain.StatisticType
+import com.example.myvkclient.extensions.mergeWith
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 
 class RepositoryImpl(
     application: Application,
@@ -24,34 +32,74 @@ class RepositoryImpl(
     private val mapper: NewsFeedMapper = NewsFeedMapper()
 
     private val _feedPosts = mutableListOf<FeedPost>()
-    val feedPosts: List<FeedPost>
+    private val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
     private var nextFrom: String? = null
 
     private val _commentsToFeedPost = mutableListOf<PostComment>()
-    val commentsToFeedPost: List<PostComment>
+    private val commentsToFeedPost: List<PostComment>
         get() = _commentsToFeedPost.toList()
 
-    override suspend fun loadNewsFeed(): List<FeedPost> {
-        Log.d("RepositoryImpl", "${token?.accessToken}")
-        val startFrom = nextFrom
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-        if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
+    private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
 
-        val response = if (startFrom == null) {
-            apiService.loadFeedPosts(getAccessToken())
-        } else {
-            apiService.loadFeedPosts(
-                getAccessToken(),
-                startFrom
-            )
+    private val refreshListFlow = MutableSharedFlow<List<FeedPost>>()
+
+    private val loadedListFlow = flow {
+        nextDataNeededEvents.emit(Unit)
+        nextDataNeededEvents.collect {
+            Log.d("RepositoryImpl", "${token?.accessToken}")
+            val startFrom = nextFrom
+
+            if (startFrom == null && feedPosts.isNotEmpty()) {
+                emit(feedPosts)
+                return@collect
+            }
+            val response = if (startFrom == null) {
+                apiService.loadFeedPosts(getAccessToken())
+            } else {
+                apiService.loadFeedPosts(
+                    getAccessToken(),
+                    startFrom
+                )
+            }
+            nextFrom = response.newsFeedContentDto.nextFrom
+            val listFeedPost = mapper.mapResponseToPosts(response)
+            _feedPosts.addAll(listFeedPost)
+            Log.d("RepositoryImpl", "$listFeedPost")
+            emit(feedPosts)
         }
-        nextFrom = response.newsFeedContentDto.nextFrom
-        val listFeedPost = mapper.mapResponseToPosts(response)
-        _feedPosts.addAll(listFeedPost)
-        Log.d("RepositoryImpl", "$listFeedPost")
-        return feedPosts
+    }
+
+    val newsFeed = loadedListFlow
+        .mergeWith(refreshListFlow)
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            feedPosts
+        )
+
+    private val nextCommentsNeeded = MutableSharedFlow<Unit>(replay = 1)
+    private val refreshPostCommentsFlow = MutableSharedFlow<List<PostComment>>()
+
+    val loadedComments = flow {
+        nextCommentsNeeded.emit(Unit)
+        nextCommentsNeeded.collect {
+            emit(commentsToFeedPost)
+        }
+    }.mergeWith(refreshPostCommentsFlow)
+        .shareIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            1
+        )
+
+    private var flagLastAmountOfComments = false
+
+    override suspend fun loadNextNewsFeed() {
+        nextDataNeededEvents.emit(Unit)
     }
 
     override suspend fun ignoreItem(feedPost: FeedPost) {
@@ -64,6 +112,7 @@ class RepositoryImpl(
         if (ignoreStatus.ignoreStatusDto.status) {
             _feedPosts.remove(feedPost)
         }
+        refreshListFlow.emit(feedPosts)
     }
 
     private fun getAccessToken(): String {
@@ -92,10 +141,12 @@ class RepositoryImpl(
         val newPost = feedPost.copy(statistics = newStatistics, isFavorite = !feedPost.isFavorite)
         val postIndex = _feedPosts.indexOf(feedPost)
         _feedPosts[postIndex] = newPost
+        refreshListFlow.emit(feedPosts)
     }
 
-    override suspend fun loadCommentsToPost(feedPost: FeedPost): List<PostComment> {
+    override suspend fun loadCommentsToPost(feedPost: FeedPost) {
         _commentsToFeedPost.clear()
+        flagLastAmountOfComments = false
         val response = apiService.getCommentsToPost(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
@@ -105,10 +156,11 @@ class RepositoryImpl(
         if (listOfComments.isNotEmpty()) {
             _commentsToFeedPost.addAll(listOfComments)
         }
-        return commentsToFeedPost
+        refreshPostCommentsFlow.emit(commentsToFeedPost)
     }
 
-    override suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost): List<PostComment> {
+    override suspend fun loadCommentsToPostFromLastComment(feedPost: FeedPost) {
+//        if (flagLastAmountOfComments) return
         val response = apiService.getCommentsToPost(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
@@ -119,6 +171,9 @@ class RepositoryImpl(
         if (nextListOfComments.isNotEmpty()) {
             _commentsToFeedPost.addAll(nextListOfComments)
         }
-        return commentsToFeedPost
+        refreshPostCommentsFlow.emit(commentsToFeedPost)
+//        if (nextListOfComments.size < PostComment.DEFAULT_AMOUNT_OF_DOWNLOAD_COMMENTS) {
+//            flagLastAmountOfComments = true
+//        }
     }
 }
