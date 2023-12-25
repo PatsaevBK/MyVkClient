@@ -1,12 +1,12 @@
 package com.example.myvkclient.presentation.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myvkclient.domain.entity.AuthState
 import com.example.myvkclient.ui.theme.MyVkClientTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
                 val launcher = rememberLauncherForActivityResult(
                     contract = VK.getVKAuthActivityResultContract()
                 ) {
-                    mainViewModel.performAuthResult(it)
+                    mainViewModel.performAuthResult()
                 }
 
                 when (authState.value) {

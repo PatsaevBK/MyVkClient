@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.myvkclient.R
-import com.example.myvkclient.domain.PostComment
+import com.example.myvkclient.domain.entity.PostComment
 
 @Composable
 fun CommentCard(postComment: PostComment, onLikeCommentClickListener: () -> Unit) {

@@ -1,6 +1,7 @@
 package com.example.myvkclient.presentation.news
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -9,9 +10,16 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myvkclient.data.repository.RepositoryImpl
-import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.domain.entity.NewsFeedResult
+import com.example.myvkclient.domain.usecases.ChangeLikeStatusUseCase
+import com.example.myvkclient.domain.usecases.GetNewsFeedUseCases
+import com.example.myvkclient.domain.usecases.IgnorePostUseCase
+import com.example.myvkclient.domain.usecases.LoadNextNewsFeedUseCase
 import com.example.myvkclient.extensions.mergeWith
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -25,15 +33,23 @@ class NewsFeedViewModel(
 
 
     private val repository = RepositoryImpl(application)
+    private val getNewsFeedUseCases = GetNewsFeedUseCases(repository)
+    private val loadNextNewsFeedUseCase = LoadNextNewsFeedUseCase(repository)
+    private val ignorePostUseCase = IgnorePostUseCase(repository)
+    private val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
 
-    private val newsFeedFlow = repository.newsFeed
+    private val newsFeedFlow = getNewsFeedUseCases()
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        Log.d("NewsFeedViewModel", "Exception is caught by exceptionHandler")
+    }
 
     private val loadNextDataEvents = MutableSharedFlow<Unit>()
     private val loadNextDataFlow = flow<NewsFeedScreenState> {
         loadNextDataEvents.collect {
             emit(
                 NewsFeedScreenState.Posts(
-                    newsFeedFlow.value,
+                    (newsFeedFlow.value as NewsFeedResult.Success).listOfPosts,
                     true
                 )
             )
@@ -41,15 +57,17 @@ class NewsFeedViewModel(
     }
 
     val screenState = newsFeedFlow
-        .filter { it.isNotEmpty() }
-        .map { NewsFeedScreenState.Posts(it) as NewsFeedScreenState }
+        .map { it as NewsFeedResult.Success }
+        .filter { it.listOfPosts.isNotEmpty() }
+        .map { NewsFeedScreenState.Posts(it.listOfPosts) as NewsFeedScreenState }
         .onStart { emit(NewsFeedScreenState.Loading) }
         .mergeWith(loadNextDataFlow)
+        .catch { emit(NewsFeedScreenState.Error) }
 
 
     fun changeLikeStatus(feedPost: FeedPost) {
-        viewModelScope.launch {
-            repository.changeLikeStatus(feedPost)
+        viewModelScope.launch(coroutineExceptionHandler) {
+            changeLikeStatusUseCase(feedPost)
         }
     }
 
@@ -57,17 +75,16 @@ class NewsFeedViewModel(
     fun loadNextFeedPosts() {
         viewModelScope.launch {
             loadNextDataEvents.emit(Unit)
-            repository.loadNextNewsFeed()
+            loadNextNewsFeedUseCase()
         }
     }
 
     fun ignoreItem(feedPost: FeedPost) {
-        viewModelScope.launch {
-            repository.ignoreItem(feedPost)
+        viewModelScope.launch(coroutineExceptionHandler) {
+            ignorePostUseCase(feedPost)
         }
 
     }
-
 
 
     companion object {

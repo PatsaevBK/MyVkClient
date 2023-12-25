@@ -1,15 +1,13 @@
 package com.example.myvkclient.data.mapper
 
 import com.example.myvkclient.data.network.models.comments.CommentItemDto
-import com.example.myvkclient.data.network.models.comments.CommentLikeDto
-import com.example.myvkclient.data.network.models.comments.CommentProfileDto
 import com.example.myvkclient.data.network.models.comments.CommentsResponseDto
 import com.example.myvkclient.data.network.models.newsFeed.NewsFeedResponseDto
-import com.example.myvkclient.domain.FeedPost
-import com.example.myvkclient.domain.PostComment
-import com.example.myvkclient.domain.PostCommentLikes
-import com.example.myvkclient.domain.StatisticItem
-import com.example.myvkclient.domain.StatisticType
+import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.domain.entity.PostComment
+import com.example.myvkclient.domain.entity.PostCommentLikes
+import com.example.myvkclient.domain.entity.StatisticItem
+import com.example.myvkclient.domain.entity.StatisticType
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -21,7 +19,7 @@ import kotlin.math.absoluteValue
 class NewsFeedMapper {
 
     fun mapResponseToPosts(responseDto: NewsFeedResponseDto): List<FeedPost> {
-        val result = mutableListOf<FeedPost>()
+        val result = linkedSetOf<FeedPost>()
         val newsFeedContentDto = responseDto.newsFeedContentDto
         val posts = newsFeedContentDto.posts.filter { it.type == "post" }
         val groups = newsFeedContentDto.groups
@@ -51,7 +49,7 @@ class NewsFeedMapper {
             )
             result.add(feedPost)
         }
-        return result
+        return result.toList()
     }
 
     fun mapCommentsResponseDtoToPostComment(

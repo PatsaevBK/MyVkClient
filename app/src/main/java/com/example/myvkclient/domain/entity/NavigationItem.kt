@@ -1,4 +1,4 @@
-package com.example.myvkclient.domain
+package com.example.myvkclient.domain.entity
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox

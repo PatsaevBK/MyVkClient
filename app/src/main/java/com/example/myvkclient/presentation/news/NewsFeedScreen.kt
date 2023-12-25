@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.Text
 import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -26,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myvkclient.R
-import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.entity.FeedPost
 import com.example.myvkclient.ui.theme.DarkBlue
 
 @Composable
@@ -37,15 +39,17 @@ fun NewsFeedScreen(
     val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = NewsFeedViewModel.Factory)
     val homeScreenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
     when (val currentState = homeScreenState.value) {
-        is NewsFeedScreenState.Posts -> FeedPosts(
-            paddingValues,
-            currentState,
-            newsFeedViewModel,
-            onCommentClickListener,
-            currentState.nextDataIsLoading
-        )
+        is NewsFeedScreenState.Posts -> {
+            FeedPosts(
+                paddingValues,
+                currentState,
+                newsFeedViewModel,
+                onCommentClickListener,
+                currentState.nextDataIsLoading
+            )
+        }
 
-        is NewsFeedScreenState.Initial -> {
+        NewsFeedScreenState.Initial -> {
 
         }
 
@@ -57,6 +61,20 @@ fun NewsFeedScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = DarkBlue)
+            }
+        }
+
+        NewsFeedScreenState.Error -> {
+            Toast.makeText(LocalContext.current, "Ошибка загрузки", Toast.LENGTH_SHORT).show()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(onClick = { newsFeedViewModel.loadNextFeedPosts() }) {
+                    Text(text = "Попробовать снова")
+                }
             }
         }
     }
@@ -96,13 +114,13 @@ private fun FeedPosts(
                 background = { }
             ) {
                 PostCard(
-                    feedPost,
-                    {
+                    feedPost = feedPost,
+                    onFeedPostLikeClickListener = {
                         newsFeedViewModel.changeLikeStatus(
                             feedPost
                         )
                     },
-                    { onCommentClickListener(feedPost) }
+                    onFeedPostCommentClickListener = { onCommentClickListener(feedPost) }
                 )
             }
         }

@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,9 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.myvkclient.R
-import com.example.myvkclient.domain.FeedPost
-import com.example.myvkclient.domain.StatisticItem
-import com.example.myvkclient.domain.StatisticType
+import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.domain.entity.StatisticItem
+import com.example.myvkclient.domain.entity.StatisticType
 import com.example.myvkclient.ui.theme.DarkRed
 
 @Composable

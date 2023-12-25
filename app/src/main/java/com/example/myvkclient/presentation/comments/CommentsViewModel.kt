@@ -8,8 +8,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myvkclient.data.repository.RepositoryImpl
-import com.example.myvkclient.domain.FeedPost
+import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.domain.entity.PostComment
+import com.example.myvkclient.domain.usecases.GetCommentFromLastCommentsUseCase
+import com.example.myvkclient.domain.usecases.GetCommentsUseCase
 import com.example.myvkclient.extensions.mergeWith
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
@@ -26,8 +30,15 @@ class CommentsViewModel(
 
 
     private val repositoryImpl = RepositoryImpl(application)
+    private val getCommentsUseCase = GetCommentsUseCase(repositoryImpl)
+    private val getCommentsFromLastCommentsUseCase = GetCommentFromLastCommentsUseCase(repositoryImpl)
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        Log.d("CommentsViewModel", "ExceptionHandler caught exception: $throwable")
+    }
 
-    private val comments = repositoryImpl.loadedComments
+    private var previousList: List<PostComment>? = null
+
+    private val comments = getCommentsUseCase(post)
     private val loadNextCommentEvent = MutableSharedFlow<Unit>()
     private val loadNextCommentFlow = flow<CommentsScreenState> {
         loadNextCommentEvent.collect {
@@ -35,7 +46,7 @@ class CommentsViewModel(
                 CommentsScreenState.Comments(
                     feedPost = post,
                     comments = comments.replayCache[0],
-                    nextCommentIsLoading = true
+                    nextCommentIsLoading = true,
                 )
             )
         }
@@ -49,27 +60,20 @@ class CommentsViewModel(
                 feedPost = post,
                 comments = it,
                 nextCommentIsLoading = false,
+                thatIsAll = previousList?.size == it.size
             ) as CommentsScreenState
         }
         .onStart { CommentsScreenState.Loading }
         .mergeWith(loadNextCommentFlow)
 
 
-    init {
-        loadComments()
-    }
-
-    private fun loadComments() {
-        viewModelScope.launch {
-            repositoryImpl.loadCommentsToPost(post)
-        }
-    }
 
     fun loadNextComments(post: FeedPost) {
-        viewModelScope.launch {
+        viewModelScope.launch(coroutineExceptionHandler) {
+            previousList = comments.replayCache[0]
             loadNextCommentEvent.emit(Unit)
             delay(3000)
-            repositoryImpl.loadCommentsToPostFromLastComment(post)
+            getCommentsFromLastCommentsUseCase(post)
         }
     }
 

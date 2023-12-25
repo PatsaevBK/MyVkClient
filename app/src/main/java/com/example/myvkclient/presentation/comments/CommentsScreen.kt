@@ -25,8 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myvkclient.R
-import com.example.myvkclient.domain.FeedPost
-import com.example.myvkclient.domain.PostComment
+import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.domain.entity.PostComment
 import com.example.myvkclient.ui.theme.DarkBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +62,8 @@ fun CommentsScreen(
                     paddingValues,
                     commentsViewModel,
                     currentState.comments,
-                    currentState.nextCommentIsLoading
+                    currentState.nextCommentIsLoading,
+                    currentState.thatIsAll
                 )
             }
 
@@ -91,6 +92,7 @@ private fun Comments(
     commentsViewModel: CommentsViewModel,
     listOfItems: List<PostComment>,
     nextCommentIsLoading: Boolean,
+    thatIsAll: Boolean
 ) {
     LazyColumn(
         modifier = Modifier.padding(paddingValues),
@@ -108,17 +110,19 @@ private fun Comments(
                 onLikeCommentClickListener = { }
             )
         }
-        item {
-            if (nextCommentIsLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = DarkBlue)
-                }
-            } else {
-                SideEffect {
-                    commentsViewModel.loadNextComments(feedPost)
+        if (!thatIsAll) {
+            item {
+                if (nextCommentIsLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = DarkBlue)
+                    }
+                } else {
+                    SideEffect {
+                        commentsViewModel.loadNextComments(feedPost)
+                    }
                 }
             }
         }

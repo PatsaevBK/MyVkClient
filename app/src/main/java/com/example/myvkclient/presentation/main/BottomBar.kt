@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.myvkclient.domain.NavigationItem.entries
+import com.example.myvkclient.domain.entity.NavigationItem.entries
 import com.example.myvkclient.navigation.NavigationState
 
 @Composable
