@@ -14,9 +14,10 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import javax.inject.Inject
 import kotlin.math.absoluteValue
 
-class NewsFeedMapper {
+class NewsFeedMapper @Inject constructor() {
 
     fun mapResponseToPosts(responseDto: NewsFeedResponseDto): List<FeedPost> {
         val result = linkedSetOf<FeedPost>()

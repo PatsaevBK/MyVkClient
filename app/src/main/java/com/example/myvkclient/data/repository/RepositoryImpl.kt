@@ -1,16 +1,15 @@
 package com.example.myvkclient.data.repository
 
-import android.app.Application
 import android.util.Log
 import com.example.myvkclient.data.mapper.NewsFeedMapper
-import com.example.myvkclient.data.network.ApiFactory
+import com.example.myvkclient.data.network.ApiService
 import com.example.myvkclient.domain.entity.AuthState
 import com.example.myvkclient.domain.entity.FeedPost
 import com.example.myvkclient.domain.entity.NewsFeedResult
 import com.example.myvkclient.domain.entity.PostComment
-import com.example.myvkclient.domain.repository.Repository
 import com.example.myvkclient.domain.entity.StatisticItem
 import com.example.myvkclient.domain.entity.StatisticType
+import com.example.myvkclient.domain.repository.Repository
 import com.example.myvkclient.extensions.mergeWith
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
@@ -26,12 +25,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class RepositoryImpl(
-    application: Application,
+class RepositoryImpl  @Inject constructor(
+    private val apiService: ApiService,
+    private val mapper: NewsFeedMapper,
+    private val storage: VKPreferencesKeyValueStorage
 ) : Repository {
-
-    private val storage = VKPreferencesKeyValueStorage(application)
 
     private val token
         get() = VKAccessToken.restore(storage)
@@ -53,9 +53,7 @@ class RepositoryImpl(
         SharingStarted.Lazily,
         AuthState.Initial
     )
-    private val apiService = ApiFactory.apiService
 
-    private val mapper: NewsFeedMapper = NewsFeedMapper()
     private val _feedPosts = mutableListOf<FeedPost>()
 
     private val feedPosts: List<FeedPost>
@@ -217,6 +215,5 @@ class RepositoryImpl(
     companion object {
 
         const val RETRY_TIMEOUT_MILLIS = 3000L
-        const val COUNT_OF_RETRY = 2L
     }
 }

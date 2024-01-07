@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,17 +28,35 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myvkclient.R
 import com.example.myvkclient.domain.entity.FeedPost
 import com.example.myvkclient.domain.entity.PostComment
+import com.example.myvkclient.getApplicationComponent
 import com.example.myvkclient.ui.theme.DarkBlue
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentsScreen(
     feedPost: FeedPost,
     onBackPressed: () -> Unit
 ) {
+    val commentsScreenComponent =
+        getApplicationComponent()
+            .getCommentsScreenComponentFactory()
+            .create(feedPost)
     val commentsViewModel: CommentsViewModel =
-        viewModel(factory = CommentsViewModel.CommentsViewModelFactory(feedPost))
+        viewModel(factory = commentsScreenComponent.getViewModelFactory())
     val screenState = commentsViewModel.screenState.collectAsState(CommentsScreenState.Initial)
+    CommentScreenStateContent(
+        screenState = screenState,
+        commentsViewModel = commentsViewModel,
+        onBackPressed = onBackPressed
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CommentScreenStateContent(
+    screenState: State<CommentsScreenState>,
+    commentsViewModel: CommentsViewModel,
+    onBackPressed: () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -58,7 +77,6 @@ fun CommentsScreen(
         when (val currentState = screenState.value) {
             is CommentsScreenState.Comments -> {
                 Comments(
-                    feedPost,
                     paddingValues,
                     commentsViewModel,
                     currentState.comments,
@@ -87,7 +105,6 @@ fun CommentsScreen(
 
 @Composable
 private fun Comments(
-    feedPost: FeedPost,
     paddingValues: PaddingValues,
     commentsViewModel: CommentsViewModel,
     listOfItems: List<PostComment>,
@@ -121,7 +138,7 @@ private fun Comments(
                     }
                 } else {
                     SideEffect {
-                        commentsViewModel.loadNextComments(feedPost)
+                        commentsViewModel.loadNextComments()
                     }
                 }
             }

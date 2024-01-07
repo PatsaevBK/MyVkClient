@@ -1,15 +1,8 @@
 package com.example.myvkclient.presentation.news
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.myvkclient.data.repository.RepositoryImpl
 import com.example.myvkclient.domain.entity.FeedPost
 import com.example.myvkclient.domain.entity.NewsFeedResult
 import com.example.myvkclient.domain.usecases.ChangeLikeStatusUseCase
@@ -25,24 +18,21 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NewsFeedViewModel(
-    private val savedStateHandle: SavedStateHandle,
-    application: Application
-) : AndroidViewModel(application) {
-
-
-    private val repository = RepositoryImpl(application)
-    private val getNewsFeedUseCases = GetNewsFeedUseCases(repository)
-    private val loadNextNewsFeedUseCase = LoadNextNewsFeedUseCase(repository)
-    private val ignorePostUseCase = IgnorePostUseCase(repository)
-    private val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
+class NewsFeedViewModel @Inject constructor(
+    private val getNewsFeedUseCases: GetNewsFeedUseCases,
+    private val loadNextNewsFeedUseCase:LoadNextNewsFeedUseCase,
+    private val ignorePostUseCase: IgnorePostUseCase,
+    private val changeLikeStatusUseCase:ChangeLikeStatusUseCase
+) : ViewModel() {
 
     private val newsFeedFlow = getNewsFeedUseCases()
 
-    private val coroutineExceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
-        Log.d("NewsFeedViewModel", "Exception is caught by exceptionHandler")
-    }
+    private val coroutineExceptionHandler =
+        CoroutineExceptionHandler { coroutineContext, throwable ->
+            Log.d("NewsFeedViewModel", "Exception is caught by exceptionHandler")
+        }
 
     private val loadNextDataEvents = MutableSharedFlow<Unit>()
     private val loadNextDataFlow = flow<NewsFeedScreenState> {
@@ -86,16 +76,4 @@ class NewsFeedViewModel(
 
     }
 
-
-    companion object {
-        val Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application =
-                    checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
-                val savedStateHandle = extras.createSavedStateHandle()
-                return NewsFeedViewModel(savedStateHandle, application) as T
-            }
-        }
-    }
 }

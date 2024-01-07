@@ -16,9 +16,7 @@ import com.example.myvkclient.navigation.rememberNavigationState
 import com.example.myvkclient.presentation.comments.CommentsScreen
 import com.example.myvkclient.presentation.news.NewsFeedScreen
 
-@OptIn(
-    ExperimentalMaterial3Api::class
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VkNewsMainScreen() {
     val navigationState = rememberNavigationState()
@@ -35,7 +33,7 @@ fun VkNewsMainScreen() {
                     navigationState.navigateToComments(it)
                 }
             },
-            commentsScreenContent = {feedPost ->
+            commentsScreenContent = { feedPost ->
                 CommentsScreen(feedPost) {
                     navigationState.navHostController.popBackStack()
                 }

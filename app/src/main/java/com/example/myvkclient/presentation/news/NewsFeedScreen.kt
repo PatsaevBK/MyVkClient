@@ -20,6 +20,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myvkclient.R
 import com.example.myvkclient.domain.entity.FeedPost
+import com.example.myvkclient.getApplicationComponent
 import com.example.myvkclient.ui.theme.DarkBlue
 
 @Composable
@@ -36,8 +38,25 @@ fun NewsFeedScreen(
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit
 ) {
-    val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = NewsFeedViewModel.Factory)
+    val component = getApplicationComponent()
+    val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = component.getViewModelFactory())
     val homeScreenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
+    NewsFeedContent(
+        homeScreenState,
+        paddingValues,
+        newsFeedViewModel,
+        onCommentClickListener
+    )
+
+}
+
+@Composable
+private fun NewsFeedContent(
+    homeScreenState: State<NewsFeedScreenState>,
+    paddingValues: PaddingValues,
+    newsFeedViewModel: NewsFeedViewModel,
+    onCommentClickListener: (FeedPost) -> Unit
+) {
     when (val currentState = homeScreenState.value) {
         is NewsFeedScreenState.Posts -> {
             FeedPosts(
@@ -78,7 +97,6 @@ fun NewsFeedScreen(
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
